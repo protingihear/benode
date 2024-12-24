@@ -3,6 +3,7 @@ const pool = require('./db');
 const router = express.Router();
 
 router.post('/create', async (req, res) => {
+    console.log('hit create isi')
     const { kategorikategori, kata, deskpris, link_yt } = req.body;
 
     if (!Array.isArray(kategorikategori) || typeof kata !== 'string' || typeof deskpris !== 'string' || typeof link_yt !== 'string') {
@@ -23,6 +24,7 @@ router.post('/create', async (req, res) => {
 });
 
 router.post('/create-category', async (req, res) => {
+    console.log('hit create category')
     const { name, description } = req.body;
 
     if (typeof name !== 'string' || typeof description !== 'string') {
@@ -43,6 +45,7 @@ router.post('/create-category', async (req, res) => {
 });
 
 router.get('/read', async (req, res) => {
+    console.log('hit read ')
     try {
         console.log('Fetching entries from database');
         const [rows] = await pool.query('SELECT * FROM entries');
@@ -54,6 +57,7 @@ router.get('/read', async (req, res) => {
 });
 
 router.put('/update/:id', async (req, res) => {
+    console.log('hit update ')
     const id = parseInt(req.params.id, 10);
     const { kategorikategori, kata, deskpris, link_yt } = req.body;
 
@@ -80,6 +84,7 @@ router.put('/update/:id', async (req, res) => {
 });
 
 router.delete('/delete/:id', async (req, res) => {
+    console.log('hit del')
     const id = parseInt(req.params.id, 10);
 
     try {
