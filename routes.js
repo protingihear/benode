@@ -1,8 +1,9 @@
 const express = require('express');
 const pool = require('./db');
 const router = express.Router();
-
+console.log("sini")
 router.post('/create', async (req, res) => {
+    console.log('hit');
     const { kategorikategori, kata, deskpris, link_yt } = req.body;
 
     if (!Array.isArray(kategorikategori) || typeof kata !== 'string' || typeof deskpris !== 'string' || typeof link_yt !== 'string') {

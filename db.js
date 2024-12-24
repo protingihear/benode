@@ -1,11 +1,23 @@
-const { Pool } = require('pg');
+const mysql = require('mysql2/promise');
 
-const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database:process.env.DB_NAME,
-    password: '',
-    port: process.env.DB_PORT,
+const pool = mysql.createPool({
+    host: 'localhost',
+    user: 'root', 
+    password: '', 
+    database: 'iheara', 
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
 });
+
+(async () => {
+    try {
+        const connection = await pool.getConnection();
+        console.log('Connected to the database');
+        connection.release(); 
+    } catch (error) {
+        console.error('Database connection error:', error);
+    }
+})();
 
 module.exports = pool;
