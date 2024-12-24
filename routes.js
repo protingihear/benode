@@ -1,9 +1,8 @@
 const express = require('express');
 const pool = require('./db');
 const router = express.Router();
-console.log("sini")
+
 router.post('/create', async (req, res) => {
-    console.log('hit');
     const { kategorikategori, kata, deskpris, link_yt } = req.body;
 
     if (!Array.isArray(kategorikategori) || typeof kata !== 'string' || typeof deskpris !== 'string' || typeof link_yt !== 'string') {
@@ -11,12 +10,14 @@ router.post('/create', async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            'INSERT INTO entries (kategorikategori, kata, deskpris, link_yt) VALUES ($1, $2, $3, $4) RETURNING *',
-            [kategorikategori, kata, deskpris, link_yt]
+        console.log('Inserting into database:', { kategorikategori, kata, deskpris, link_yt });
+        const [result] = await pool.query(
+            'INSERT INTO entries (kategorikategori, kata, deskpris, link_yt) VALUES (?, ?, ?, ?)',
+            [JSON.stringify(kategorikategori), kata, deskpris, link_yt]
         );
-        res.status(201).send(result.rows[0]);
-    } catch {
+        res.status(201).send({ id: result.insertId, ...req.body });
+    } catch (error) {
+        console.error('Error during insert:', error);
         res.status(500).send({ error: 'Create failed' });
     }
 });
@@ -29,21 +30,25 @@ router.post('/create-category', async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            'INSERT INTO categories (name, description) VALUES ($1, $2) RETURNING *',
+        console.log('Inserting category into database:', { name, description });
+        const [result] = await pool.query(
+            'INSERT INTO categories (name, description) VALUES (?, ?)',
             [name, description]
         );
-        res.status(201).send(result.rows[0]);
-    } catch {
+        res.status(201).send({ id: result.insertId, name, description });
+    } catch (error) {
+        console.error('Error during category insert:', error);
         res.status(500).send({ error: 'Create failed' });
     }
 });
 
 router.get('/read', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM entries');
-        res.send(result.rows);
-    } catch {
+        console.log('Fetching entries from database');
+        const [rows] = await pool.query('SELECT * FROM entries');
+        res.send(rows);
+    } catch (error) {
+        console.error('Error during fetch:', error);
         res.status(500).send({ error: 'Read failed' });
     }
 });
@@ -57,17 +62,19 @@ router.put('/update/:id', async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            'UPDATE entries SET kategorikategori = $1, kata = $2, deskpris = $3, link_yt = $4 WHERE id = $5 RETURNING *',
-            [kategorikategori, kata, deskpris, link_yt, id]
+        console.log('Updating database for id:', id, { kategorikategori, kata, deskpris, link_yt });
+        const [result] = await pool.query(
+            'UPDATE entries SET kategorikategori = ?, kata = ?, deskpris = ?, link_yt = ? WHERE id = ?',
+            [JSON.stringify(kategorikategori), kata, deskpris, link_yt, id]
         );
 
-        if (result.rowCount === 0) {
+        if (result.affectedRows === 0) {
             return res.status(404).send({ error: 'Not found' });
         }
 
-        res.send(result.rows[0]);
-    } catch {
+        res.send({ id, kategorikategori, kata, deskpris, link_yt });
+    } catch (error) {
+        console.error('Error during update:', error);
         res.status(500).send({ error: 'Update failed' });
     }
 });
@@ -76,14 +83,16 @@ router.delete('/delete/:id', async (req, res) => {
     const id = parseInt(req.params.id, 10);
 
     try {
-        const result = await pool.query('DELETE FROM entries WHERE id = $1 RETURNING *', [id]);
+        console.log('Deleting from database id:', id);
+        const [result] = await pool.query('DELETE FROM entries WHERE id = ?', [id]);
 
-        if (result.rowCount === 0) {
+        if (result.affectedRows === 0) {
             return res.status(404).send({ error: 'Not found' });
         }
 
-        res.send(result.rows[0]);
-    } catch {
+        res.send({ id });
+    } catch (error) {
+        console.error('Error during delete:', error);
         res.status(500).send({ error: 'Delete failed' });
     }
 });
