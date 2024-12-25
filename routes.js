@@ -102,4 +102,15 @@ router.delete('/delete/:id', async (req, res) => {
     }
 });
 
+// GET all categories
+router.get('/categories', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM categories');
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error fetching categories:', error.message);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
 module.exports = router;
